@@ -1,3 +1,16 @@
+---
+layout: post
+title:  Activity启动流程
+date:   2022-11-12 00:00:00 +0800
+categories: document
+tag: 教程
+---
+
+
+* content
+  {:toc}
+
+
 # Activity的启动流程
 
 **基于Android T**
