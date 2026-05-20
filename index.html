@@ -549,6 +549,55 @@
             font-size: 0.85rem;
         }
 
+        /* 博客文章列表 */
+        .blog-list {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .blog-item {
+            display: flex;
+            align-items: baseline;
+            gap: 1.5rem;
+            padding: 1.2rem 0;
+            border-bottom: 1px solid #eee;
+            text-decoration: none;
+            color: inherit;
+            transition: color 0.2s;
+        }
+
+        .blog-item:last-child {
+            border-bottom: none;
+        }
+
+        .blog-item:hover .blog-title {
+            color: #1565C0;
+        }
+
+        .blog-date {
+            color: #999;
+            font-size: 0.88rem;
+            white-space: nowrap;
+            min-width: 90px;
+        }
+
+        .blog-title {
+            font-size: 1rem;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .blog-tag {
+            margin-left: auto;
+            background: #e8eaf6;
+            color: #5c6bc0;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+
         /* 响应式 */
         @media (max-width: 768px) {
             .nav-links {
@@ -596,6 +645,7 @@
                 <li><a href="#projects">项目</a></li>
                 <li><a href="#skills">技能</a></li>
                 <li><a href="#contact">联系</a></li>
+                <li><a href="#blog">博客</a></li>
             </ul>
             <button class="hamburger" id="hamburger" aria-label="菜单">
                 <span></span>
@@ -610,6 +660,7 @@
                 <li><a href="#projects">项目</a></li>
                 <li><a href="#skills">技能</a></li>
                 <li><a href="#contact">联系</a></li>
+                <li><a href="#blog">博客</a></li>
             </ul>
         </div>
     </nav>
@@ -834,6 +885,48 @@
                     </div>
                     <button type="submit" class="submit-btn">发送消息</button>
                 </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- 博客文章 -->
+    <section class="section section-alt" id="blog">
+        <div class="container">
+            <div class="section-title">
+                <h2>博客文章</h2>
+                <p>技术笔记与学习记录</p>
+            </div>
+            <div class="blog-list">
+                <a href="/2026/05/17/blur-examples-verification/" class="blog-item">
+                    <span class="blog-date">2026-05-17</span>
+                    <span class="blog-title">View 模糊 &amp; Window 模糊实例验证</span>
+                    <span class="blog-tag">Blur</span>
+                </a>
+                <a href="/2026/05/17/window-blur-analysis/" class="blog-item">
+                    <span class="blog-date">2026-05-17</span>
+                    <span class="blog-title">Android 16 Window 模糊完整流程深度分析</span>
+                    <span class="blog-tag">Blur</span>
+                </a>
+                <a href="/2026/05/17/view-blur-analysis/" class="blog-item">
+                    <span class="blog-date">2026-05-17</span>
+                    <span class="blog-title">Android 16 View 模糊完整流程深度分析</span>
+                    <span class="blog-tag">Blur</span>
+                </a>
+                <a href="/2026/05/13/android-app-launch-view-drawing-framework/" class="blog-item">
+                    <span class="blog-date">2026-05-13</span>
+                    <span class="blog-title">Android 应用启动与 View 绘制 — 三进程图形框架总览</span>
+                    <span class="blog-tag">图形框架</span>
+                </a>
+                <a href="/2026/05/12/view-drawing-hwui-renderthread-surfaceflinger/" class="blog-item">
+                    <span class="blog-date">2026-05-12</span>
+                    <span class="blog-title">View 绘制深度分析：HWUI · RenderThread · SurfaceFlinger</span>
+                    <span class="blog-tag">HWUI</span>
+                </a>
+                <a href="/2022/11/12/Activity-launch-process/" class="blog-item">
+                    <span class="blog-date">2022-11-12</span>
+                    <span class="blog-title">Activity 启动流程</span>
+                    <span class="blog-tag">Android</span>
+                </a>
             </div>
         </div>
     </section>
