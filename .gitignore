@@ -1,3 +1,16 @@
-_site
-.sass-cache
-.jekyll-cache/
+# SSH 密钥 — 绝对不能入库
+sshrsa
+sshrsa.pub
+y
+y.pub
+id_rsa
+id_rsa.pub
+*.pem
+*.key
+
+# Claude Code 工作目录
+.claude/
+
+# Windows
+Thumbs.db
+desktop.ini

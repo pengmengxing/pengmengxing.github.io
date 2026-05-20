@@ -1,147 +1,892 @@
----
-layout: default
----
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pengmengxing | Android 图形框架工程师</title>
+    <meta name="description" content="pengmengxing 的个人主页 — Android 图形框架工程师，专注 SurfaceFlinger、HWUI、窗口系统与动画框架">
+    <meta name="keywords" content="Android, SurfaceFlinger, HWUI, Skia, Vulkan, 图形框架, pengmengxing, Android 16, AOSP">
+    <meta property="og:title" content="pengmengxing | Android 图形框架工程师">
+    <meta property="og:description" content="专注 Android 16 AOSP 图形渲染与合成领域的系统工程师">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://pengmengxing.top/">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
- <div class="container docs-container">
-      <div class="row">
-        <div class="col-md-3">
-          <div class="sidebar hidden-print" role="complementary">
-            <div id="navigation">
-              <h1>目录</h1>
-              <ul class="nav sidenav">
-                {% capture topping %}false{% endcapture %}
-                {% for post in site.posts  %}
-                  {% if post.topping %}
-                    {% capture topping %}{{post.topping}}{% endcapture %}
-                    {% break %}
-                  {% endif %}
-                {% endfor %}
-                {% if topping == 'true' %}
-                  <li><a href="#topping">置顶</a>
-                {% endif %}
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
 
-                {% for post in site.posts  %}
-                
-                  {% capture this_year %}{{ post.date | date: "%Y" }}{% endcapture %}
-                  {% capture this_month %}{{ post.date | date: "%B" }}{% endcapture %}
-                  {% capture next_year %}{{ post.previous.date | date: "%Y" }}{% endcapture %}
-                  {% capture next_month %}{{ post.previous.date | date: "%B" }}{% endcapture %}
-                  {% if forloop.first %}
-                    <li><a href="#year_{{this_year}}">{{this_year}}</a>
-                      <ul class="nav">
-                        <li><a href="#month_{{this_year}}_{{this_month}}">{{this_month}}</a></li>
-                  {% endif %}
-                  {% if forloop.last %}
-                        </ul>
-                      </li>
-                  {% else %}
-                    {% if this_year != next_year %}
-                        </ul>
-                      </li>
-                      <li><a href="#year_{{next_year}}">{{next_year}}</a>
-                        <ul class="nav">
-                          <li><a href="#month_{{next_year}}_{{next_month}}">{{next_month}}</a></li>
-                    {% else %}    
-                      {% if this_month != next_month %}
-                          <li><a href="#month_{{next_year}}_{{next_month}}">{{next_month}}</a></li>
-                      {% endif %}
-                    {% endif %}
-                  {% endif %}
-                {% endfor %}
-              </ul>
-              <div style="height: 200px;width: 200px;">
-                
-                <script type="text/javascript" src="//rf.revolvermaps.com/0/0/8.js?i={{ site.revolvermaps }}&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;f=arial&amp;l=33" async="async"> 
-                </script>
-              </div>
-            </div>
-          </div>
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            transition: background 0.3s;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1565C0;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #1565C0;
+        }
+
+        /* 汉堡菜单 */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 5px;
+            background: none;
+            border: none;
+            padding: 4px;
+        }
+
+        .hamburger span {
+            display: block;
+            width: 25px;
+            height: 2px;
+            background: #333;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: translateY(7px) rotate(45deg);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: translateY(-7px) rotate(-45deg);
+        }
+
+        .mobile-menu {
+            display: none;
+            background: #fff;
+            border-top: 1px solid #eee;
+            padding: 1rem 0;
+        }
+
+        .mobile-menu.open {
+            display: block;
+        }
+
+        .mobile-menu ul {
+            list-style: none;
+        }
+
+        .mobile-menu ul li a {
+            display: block;
+            padding: 0.75rem 20px;
+            text-decoration: none;
+            color: #555;
+            font-weight: 500;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .mobile-menu ul li a:hover {
+            background: #f0f4ff;
+            color: #1565C0;
+        }
+
+        /* 英雄区域 */
+        .hero {
+            background: linear-gradient(135deg, #1565C0 0%, #0D47A1 60%, #1a237e 100%);
+            color: white;
+            padding: 150px 0 100px;
+            text-align: center;
+            margin-top: 60px;
+        }
+
+        .hero-tag {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            padding: 4px 16px;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 300;
+        }
+
+        .hero h1 strong {
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.85;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #fff;
+            color: #1565C0;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .cta-button-outline {
+            display: inline-block;
+            padding: 12px 30px;
+            background: transparent;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            border: 2px solid rgba(255,255,255,0.6);
+            transition: transform 0.3s, background 0.3s;
+        }
+
+        .cta-button-outline:hover {
+            transform: translateY(-2px);
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* 内容区域 */
+        .section {
+            padding: 80px 0;
+            background: #fff;
+        }
+
+        .section-alt {
+            background: #f8f9fa;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: #1a237e;
+            margin-bottom: 1rem;
+        }
+
+        .section-title p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        /* 关于我 */
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 3rem;
+            align-items: start;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .about-meta {
+            background: #f0f4ff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border-left: 4px solid #1565C0;
+        }
+
+        .about-meta h3 {
+            color: #1565C0;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .about-meta-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+            color: #444;
+        }
+
+        .about-meta-item .label {
+            color: #888;
+            min-width: 48px;
+            font-size: 0.85rem;
+        }
+
+        .about-content p {
+            color: #555;
+            margin-bottom: 1rem;
+            font-size: 1.05rem;
+        }
+
+        .about-content .tech-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .tech-tag {
+            background: #e8eaf6;
+            color: #1565C0;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* 项目网格 */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .project-card {
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid #e0e0e0;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(21,101,192,0.15);
+        }
+
+        .project-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #1565C0, #1a237e);
+            color: white;
+        }
+
+        .project-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .project-header h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .project-content {
+            padding: 1.5rem;
+        }
+
+        .project-content p {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .project-tag {
+            background: #f0f4ff;
+            color: #1565C0;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .project-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: #1565C0;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .project-link:hover {
+            text-decoration: underline;
+        }
+
+        /* 技能部分 */
+        .skills-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .skill-category h3 {
+            margin-bottom: 1.2rem;
+            color: #1a237e;
+            font-size: 1.1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e8eaf6;
+        }
+
+        .skill-item {
+            margin-bottom: 1rem;
+        }
+
+        .skill-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.35rem;
+            font-size: 0.95rem;
+            color: #444;
+        }
+
+        .skill-pct {
+            color: #1565C0;
+            font-weight: 600;
+        }
+
+        .skill-bar {
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 8px;
+        }
+
+        .skill-level {
+            background: linear-gradient(90deg, #1565C0, #42a5f5);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1s ease;
+        }
+
+        /* 联系 */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .contact-info h3 {
+            color: #1a237e;
+            margin-bottom: 1rem;
+        }
+
+        .contact-info p {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .contact-link-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            text-decoration: none;
+            color: #444;
+            transition: color 0.2s;
+        }
+
+        .contact-link-item:hover {
+            color: #1565C0;
+        }
+
+        .contact-icon {
+            width: 40px;
+            height: 40px;
+            background: #e8eaf6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .contact-form {
+            background: #fff;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.4rem;
+            color: #333;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1565C0;
+        }
+
+        .form-group textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            background: #1565C0;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-family: inherit;
+            font-weight: 500;
+            transition: background 0.3s, transform 0.2s;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            background: #0D47A1;
+            transform: translateY(-1px);
+        }
+
+        /* 页脚 */
+        .footer {
+            background: #1a237e;
+            color: rgba(255,255,255,0.8);
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .social-links a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .social-links a:hover {
+            color: #fff;
+        }
+
+        .footer p {
+            font-size: 0.85rem;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .hero {
+                padding: 120px 0 80px;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .about-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-title h2 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-content">
+            <a href="#home" class="logo">pengmengxing</a>
+            <ul class="nav-links">
+                <li><a href="#home">首页</a></li>
+                <li><a href="#about">关于我</a></li>
+                <li><a href="#projects">项目</a></li>
+                <li><a href="#skills">技能</a></li>
+                <li><a href="#contact">联系</a></li>
+            </ul>
+            <button class="hamburger" id="hamburger" aria-label="菜单">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
         </div>
-        <div class="col-md-9" role="main">
-          <div class="panel docs-content">
-            <div class="wrapper">
-              <div class="home">
-                {% capture topping %}false{% endcapture %}
-                {% for post in site.posts  %}
-                  {% if post.topping %}
-                    {% capture topping %}{{post.topping}}{% endcapture %}
-                    {% break %}
-                  {% endif %}
-                {% endfor %}
-              
-                {% if topping == 'true' %}
-                <h2 class="topping">
-                  置顶文章
-                  <span class="anchor-target" id="topping"></span>
-                  <a href="#topping" name="topping" class="anchor glyphicon glyphicon-link"></a>
-                </h2>
-                <ul>
-                  {% for post in site.posts  %}
-                    {% if post.topping %}
-                      <ol class="breadcrumb">
-                        <li><span>{{ post.date | date: "%B %e, %Y" }}</span> &raquo; <a href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a></li>
-                      </ol>
-                    {% endif %}
-                  {% endfor %}
-                </ul>
-                {% endif %}
-
-                {% for post in site.posts  %}
-
-                  {% capture this_year %}{{ post.date | date: "%Y" }}{% endcapture %}
-                  {% capture this_month %}{{ post.date | date: "%B" }}{% endcapture %}
-                  {% capture next_year %}{{ post.previous.date | date: "%Y" }}{% endcapture %}
-                  {% capture next_month %}{{ post.previous.date | date: "%B" }}{% endcapture %}
-
-                  {% if forloop.first %}
-                    <h1>
-                      {{this_year}}
-                      <span class="anchor-target" id="year_{{this_year}}"></span>
-                      <a href="#year_{{this_year}}" name="year_{{this_year}}" class="anchor glyphicon glyphicon-link"></a>
-                    </h1>
-                    <h2>
-                      {{this_month}}
-                      <span class="anchor-target" id="month_{{this_year}}_{{this_month}}"></span>
-                      <a href="#month_{{this_year}}_{{this_month}}" name="month_{{this_year}}_{{this_month}}" class="anchor glyphicon glyphicon-link"></a>
-                    </h2>
-                    <ul>
-                  {% endif %}
-
-                  <ol class="breadcrumb">
-                   <li><span>{{ post.date | date: "%B %e, %Y" }}</span> &raquo; <a href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a></li>
-                  </ol>
-                  {% if forloop.last %}
-                    </ul>
-                  {% else %}
-                    {% if this_year != next_year %}
-                      </ul>
-                      <h1>
-                        {{next_year}}
-                        <span class="anchor-target" id="year_{{next_year}}"></span>
-                        <a href="#year_{{next_year}}" name="year_{{next_year}}" class="anchor glyphicon glyphicon-link"></a>
-                      </h1>
-                      <h2>
-                        {{next_month}}
-                        <span class="anchor-target" id="month_{{next_year}}_{{next_month}}"></span>
-                        <a href="#month_{{next_year}}_{{next_month}}" name="month_{{next_year}}_{{next_month}}" class="anchor glyphicon glyphicon-link"></a>
-                      </h2>
-                      <ul>
-                    {% else %}    
-                      {% if this_month != next_month %}
-                        </ul>
-                        <h2>
-                          {{next_month}}
-                          <span class="anchor-target" id="month_{{next_year}}_{{next_month}}"></span>
-                          <a href="#month_{{next_year}}_{{next_month}}" name="month_{{next_year}}_{{next_month}}" class="anchor glyphicon glyphicon-link"></a>
-                        </h2>
-                        <ul>
-                      {% endif %}
-                    {% endif %}
-                  {% endif %}
-                {% endfor %}
-              </div>
-            </div>
-          </div>
+        <div class="mobile-menu" id="mobileMenu">
+            <ul>
+                <li><a href="#home">首页</a></li>
+                <li><a href="#about">关于我</a></li>
+                <li><a href="#projects">项目</a></li>
+                <li><a href="#skills">技能</a></li>
+                <li><a href="#contact">联系</a></li>
+            </ul>
         </div>
-      </div>
-    </div>
+    </nav>
+
+    <!-- 英雄区域 -->
+    <section class="hero" id="home">
+        <div class="container">
+            <div class="hero-tag">Android 16 AOSP</div>
+            <h1><strong>pengmengxing</strong></h1>
+            <p>Android 图形框架工程师 · SurfaceFlinger · HWUI · 窗口系统</p>
+            <div class="hero-buttons">
+                <a href="#projects" class="cta-button">查看项目</a>
+                <a href="https://github.com/pengmengxing" target="_blank" rel="noopener" class="cta-button-outline">GitHub</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 关于我 -->
+    <section class="section" id="about">
+        <div class="container">
+            <div class="section-title">
+                <h2>关于我</h2>
+                <p>专注 Android 图形栈底层开发</p>
+            </div>
+            <div class="about-grid">
+                <div class="about-meta">
+                    <h3>基本信息</h3>
+                    <div class="about-meta-item">
+                        <span class="label">方向</span>
+                        <span>Android 图形框架</span>
+                    </div>
+                    <div class="about-meta-item">
+                        <span class="label">领域</span>
+                        <span>系统底层 / 渲染合成</span>
+                    </div>
+                    <div class="about-meta-item">
+                        <span class="label">代码库</span>
+                        <span>Android 16 AOSP</span>
+                    </div>
+                    <div class="about-meta-item">
+                        <span class="label">语言</span>
+                        <span>C++17 · Java</span>
+                    </div>
+                </div>
+                <div class="about-content">
+                    <p>
+                        专注于 Android 系统底层图形框架的研究与开发，深入 Android 16 AOSP 源码，覆盖 SurfaceFlinger 合成器、HWUI 渲染引擎、窗口管理系统（WMS/ViewRootImpl）以及动画框架等核心模块。
+                    </p>
+                    <p>
+                        熟悉 BLASTBufferQueue 跨进程缓冲传递机制、Vsync 信号链路、HWC3 硬件合成接口（AIDL Composer3），以及 Skia GL / Vulkan 双 Pipeline 渲染路径。擅长通过 Perfetto trace 分析 Jank 问题并定位帧丢失根因。
+                    </p>
+                    <div class="tech-tags">
+                        <span class="tech-tag">SurfaceFlinger</span>
+                        <span class="tech-tag">HWUI</span>
+                        <span class="tech-tag">Skia</span>
+                        <span class="tech-tag">Vulkan</span>
+                        <span class="tech-tag">BufferQueue</span>
+                        <span class="tech-tag">HWC3</span>
+                        <span class="tech-tag">Binder IPC</span>
+                        <span class="tech-tag">Perfetto</span>
+                        <span class="tech-tag">C++17</span>
+                        <span class="tech-tag">AOSP</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 项目展示 -->
+    <section class="section section-alt" id="projects">
+        <div class="container">
+            <div class="section-title">
+                <h2>学习笔记 & 研究</h2>
+                <p>深入 AOSP 源码的探索记录</p>
+            </div>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-icon">⚙️</div>
+                        <h3>Android 系统启动分析</h3>
+                    </div>
+                    <div class="project-content">
+                        <p>深入分析 Android 系统启动流程，涵盖 Zygote 孵化、AMS 初始化、Activity 启动全链路（冷启动 / 温启动）及 Binder 线程池建立过程。</p>
+                        <div class="project-tags">
+                            <span class="project-tag">Zygote</span>
+                            <span class="project-tag">AMS</span>
+                            <span class="project-tag">Binder</span>
+                            <span class="project-tag">Activity</span>
+                        </div>
+                        <a href="https://github.com/pengmengxing" target="_blank" rel="noopener" class="project-link">查看 GitHub →</a>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-icon">🎨</div>
+                        <h3>图形渲染合成研究</h3>
+                    </div>
+                    <div class="project-content">
+                        <p>系统梳理 SurfaceFlinger 合成循环、HWUI RenderThread 渲染流程、BufferQueue 状态机，以及 Vsync 信号从 HWComposer 到 Choreographer 的完整链路。</p>
+                        <div class="project-tags">
+                            <span class="project-tag">SurfaceFlinger</span>
+                            <span class="project-tag">HWUI</span>
+                            <span class="project-tag">Vsync</span>
+                            <span class="project-tag">HWC3</span>
+                        </div>
+                        <a href="https://github.com/pengmengxing" target="_blank" rel="noopener" class="project-link">查看 GitHub →</a>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-icon">☕</div>
+                        <h3>Java 系统开发学习</h3>
+                    </div>
+                    <div class="project-content">
+                        <p>系统整理 Java 在 Android Framework 层的应用：多线程模型、集合框架、泛型设计、反射机制，以及 Android 特有的 Handler/Looper 消息机制。</p>
+                        <div class="project-tags">
+                            <span class="project-tag">Java</span>
+                            <span class="project-tag">多线程</span>
+                            <span class="project-tag">集合框架</span>
+                            <span class="project-tag">Handler</span>
+                        </div>
+                        <a href="https://github.com/pengmengxing" target="_blank" rel="noopener" class="project-link">查看 GitHub →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 技能 -->
+    <section class="section" id="skills">
+        <div class="container">
+            <div class="section-title">
+                <h2>技术栈</h2>
+                <p>Android 图形框架核心能力</p>
+            </div>
+            <div class="skills-container">
+                <div class="skill-category">
+                    <h3>系统底层开发</h3>
+                    <div class="skill-item">
+                        <div class="skill-label"><span>C++17 (AOSP Native)</span><span class="skill-pct">90%</span></div>
+                        <div class="skill-bar"><div class="skill-level" style="width: 90%;"></div></div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-label"><span>Java Framework</span><span class="skill-pct">85%</span></div>
+                        <div class="skill-bar"><div class="skill-level" style="width: 85%;"></div></div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-label"><span>Binder IPC / AIDL</span><span class="skill-pct">82%</span></div>
+                        <div class="skill-bar"><div class="skill-level" style="width: 82%;"></div></div>
+                    </div>
+                </div>
+                <div class="skill-category">
+                    <h3>图形渲染</h3>
+                    <div class="skill-item">
+                        <div class="skill-label"><span>SurfaceFlinger / HWC3</span><span class="skill-pct">88%</span></div>
+                        <div class="skill-bar"><div class="skill-level" style="width: 88%;"></div></div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-label"><span>HWUI / Skia</span><span class="skill-pct">80%</span></div>
+                        <div class="skill-bar"><div class="skill-level" style="width: 80%;"></div></div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-label"><span>Vulkan / OpenGL ES</span><span class="skill-pct">75%</span></div>
+                        <div class="skill-bar"><div class="skill-level" style="width: 75%;"></div></div>
+                    </div>
+                </div>
+                <div class="skill-category">
+                    <h3>工具链 & 调试</h3>
+                    <div class="skill-item">
+                        <div class="skill-label"><span>AOSP / Soong 构建</span><span class="skill-pct">90%</span></div>
+                        <div class="skill-bar"><div class="skill-level" style="width: 90%;"></div></div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-label"><span>Perfetto / Systrace</span><span class="skill-pct">85%</span></div>
+                        <div class="skill-bar"><div class="skill-level" style="width: 85%;"></div></div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-label"><span>ADB / Dumpsys</span><span class="skill-pct">92%</span></div>
+                        <div class="skill-bar"><div class="skill-level" style="width: 92%;"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 联系 -->
+    <section class="section section-alt" id="contact">
+        <div class="container">
+            <div class="section-title">
+                <h2>联系我</h2>
+                <p>欢迎交流 Android 图形框架相关技术</p>
+            </div>
+            <div class="contact-grid">
+                <div class="contact-info">
+                    <h3>联系方式</h3>
+                    <p>如有 Android 系统底层、渲染合成或 AOSP 相关话题，欢迎通过以下方式交流。</p>
+                    <a href="https://github.com/pengmengxing" target="_blank" rel="noopener" class="contact-link-item">
+                        <div class="contact-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="#1565C0"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.11.82-.26.82-.58v-2.03c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.5.99.11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 013-.4c1.02.005 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                        </div>
+                        <span>github.com/pengmengxing</span>
+                    </a>
+                    <a href="mailto:pengmengxing1994@163.com" class="contact-link-item">
+                        <div class="contact-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1565C0" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
+                        </div>
+                        <span>pengmengxing1994@163.com</span>
+                    </a>
+                </div>
+                <form class="contact-form" action="mailto:pengmengxing1994@163.com" method="post" enctype="text/plain">
+                    <div class="form-group">
+                        <label for="name">姓名</label>
+                        <input type="text" id="name" name="name" placeholder="请输入您的姓名" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">邮箱</label>
+                        <input type="email" id="email" name="email" placeholder="请输入您的邮箱" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">消息</label>
+                        <textarea id="message" name="message" placeholder="请输入您的消息"></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">发送消息</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="social-links">
+                <a href="https://github.com/pengmengxing" target="_blank" rel="noopener">GitHub</a>
+                <a href="mailto:pengmengxing1994@163.com">Email</a>
+            </div>
+            <p>&copy; 2014–2025 pengmengxing. Hosted on GitHub Pages.</p>
+        </div>
+    </footer>
+
+    <script>
+        // 汉堡菜单
+        const hamburger = document.getElementById('hamburger');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            mobileMenu.classList.toggle('open');
+        });
+
+        // 移动端点击菜单项后关闭
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                mobileMenu.classList.remove('open');
+            });
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href === '#') return;
+                const target = document.querySelector(href);
+                if (target) {
+                    e.preventDefault();
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // 导航栏滚动效果
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            navbar.style.background = window.scrollY > 80
+                ? 'rgba(255, 255, 255, 0.97)'
+                : '#fff';
+        });
+    </script>
+</body>
+</html>
