@@ -214,6 +214,17 @@
             color: #777;
             line-height: 1.55;
         }
+        .post-card-private {
+            border-color: #c5cae9;
+            background: linear-gradient(135deg, #f8f9ff 0%, #fff 100%);
+        }
+        .post-card-private:hover {
+            box-shadow: 0 6px 24px rgba(21,101,192,0.15);
+        }
+        .post-tag-lock {
+            background: #e8eaf6;
+            color: #3949AB;
+        }
 
         /* ── 侧边栏 ── */
         .sidebar { position: sticky; top: 72px; }
@@ -298,6 +309,7 @@
         <a href="#" class="nav-logo">pengmengxing</a>
         <ul class="nav-links">
             <li><a href="#posts">文章</a></li>
+            <li><a href="/android_learn_code/">源码笔记</a></li>
             <li><a href="#about">关于</a></li>
             <li><a href="https://github.com/pengmengxing" target="_blank" rel="noopener">GitHub</a></li>
         </ul>
@@ -307,6 +319,7 @@
     </div>
     <div class="mobile-menu" id="mobileMenu">
         <a href="#posts">文章</a>
+        <a href="/android_learn_code/">源码笔记</a>
         <a href="#about">关于</a>
         <a href="https://github.com/pengmengxing" target="_blank" rel="noopener">GitHub</a>
     </div>
@@ -382,6 +395,14 @@
             </div>
             <div class="post-title">Activity 启动流程</div>
             <div class="post-desc">深入追踪 startActivity() 到 onResume() 的完整源码路径，覆盖 AMS 调度、进程创建与 Window 附着全流程。</div>
+        </a>
+
+        <a href="/android_learn_code/" class="post-card post-card-private">
+            <div class="post-meta">
+                <span class="post-tag post-tag-lock">🔒 私有</span>
+            </div>
+            <div class="post-title">Android 源码学习笔记（18 篇）</div>
+            <div class="post-desc">涵盖 Binder · SurfaceFlinger · BufferQueue · Choreographer · Handler · Zygote 等核心机制的深度源码分析，需密码访问。</div>
         </a>
     </section>
 
