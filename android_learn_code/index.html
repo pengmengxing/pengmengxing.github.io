@@ -3,78 +3,288 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Android 源码学习 · 验证入口</title>
+  <title>Android 源码学习笔记</title>
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Segoe UI','Microsoft YaHei',sans-serif;background:#f5f6f8;
-         display:flex;align-items:center;justify-content:center;min-height:100vh}
-    .card{background:#fff;border-radius:14px;padding:2.5rem 2rem;
-          box-shadow:0 8px 32px rgba(21,101,192,0.12);width:360px;text-align:center}
-    .lock{font-size:2.5rem;margin-bottom:1rem}
-    h1{font-size:1.2rem;color:#1a237e;margin-bottom:0.4rem}
-    .sub{font-size:0.85rem;color:#888;margin-bottom:1.8rem}
-    input[type=password]{width:100%;padding:10px 14px;border:1.5px solid #ddd;
-      border-radius:8px;font-size:1rem;text-align:center;letter-spacing:4px;
-      outline:none;transition:border-color 0.2s}
-    input[type=password]:focus{border-color:#1565C0}
-    button{margin-top:1rem;width:100%;padding:11px;background:#1565C0;color:#fff;
-      border:none;border-radius:8px;font-size:1rem;cursor:pointer;
-      transition:background 0.2s}
-    button:hover{background:#0D47A1}
-    .err{margin-top:0.8rem;font-size:0.85rem;color:#e53935;display:none}
-    .back{margin-top:1.4rem;font-size:0.82rem}
-    .back a{color:#888;text-decoration:none}
-    .back a:hover{color:#1565C0}
-    /* 文章列表（验证通过后显示） */
-    #content{display:none;text-align:left;margin-top:1.5rem}
-    #content h2{font-size:0.75rem;font-weight:700;color:#1565C0;
-      letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1rem}
-    .article-list{list-style:none}
-    .article-list li{border-bottom:1px solid #f0f0f0}
-    .article-list a{display:block;padding:0.65rem 0;font-size:0.92rem;
-      color:#222;text-decoration:none;transition:color 0.2s}
-    .article-list a:hover{color:#1565C0}
-    .article-list .tag{font-size:0.72rem;color:#888;margin-left:0.4rem}
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; color: #222; }
+    a { text-decoration: none; color: inherit; }
+
+    /* ── 锁定状态 ── */
+    #gatePage {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+      background: linear-gradient(135deg, #1565C0 0%, #0D47A1 55%, #1a237e 100%);
+    }
+    .gate-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 3rem 2.5rem;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.28);
+    }
+    .lock-icon { font-size: 3rem; display: block; margin-bottom: 1.2rem; }
+    .gate-title { font-size: 1.4rem; font-weight: 700; color: #1a237e; margin-bottom: 0.3rem; }
+    .gate-sub { font-size: 0.88rem; color: #aaa; margin-bottom: 2rem; }
+    .gate-input {
+      width: 100%; padding: 12px 16px;
+      border: 2px solid #e0e0e0; border-radius: 10px;
+      font-size: 1rem; text-align: center; letter-spacing: 6px;
+      outline: none; transition: border-color 0.2s; color: #333;
+    }
+    .gate-input:focus { border-color: #1565C0; }
+    .gate-btn {
+      margin-top: 1rem; width: 100%; padding: 13px;
+      background: linear-gradient(135deg, #1565C0, #0D47A1);
+      color: #fff; border: none; border-radius: 10px;
+      font-size: 1rem; font-weight: 600; cursor: pointer; letter-spacing: 1px;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .gate-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .gate-err { margin-top: 0.8rem; font-size: 0.85rem; color: #e53935; display: none; }
+    .gate-back { margin-top: 1.6rem; font-size: 0.82rem; }
+    .gate-back a { color: #bbb; }
+    .gate-back a:hover { color: #1565C0; }
+
+    /* ── 解锁状态 ── */
+    #contentPage { display: none; background: #f5f6f8; min-height: 100vh; }
+
+    .c-nav {
+      background: rgba(255,255,255,0.97);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid #e8eaf0;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .c-nav-inner {
+      max-width: 980px; margin: 0 auto; padding: 0 24px;
+      height: 54px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .c-nav-logo { font-weight: 700; font-size: 1rem; color: #1565C0; }
+    .c-nav-links { display: flex; gap: 1.6rem; list-style: none; }
+    .c-nav-links a { font-size: 0.88rem; color: #555; font-weight: 500; transition: color 0.2s; }
+    .c-nav-links a:hover { color: #1565C0; }
+
+    .c-hero {
+      background: linear-gradient(135deg, #1565C0 0%, #0D47A1 55%, #1a237e 100%);
+      color: #fff;
+      padding: 56px 24px 44px;
+      text-align: center;
+    }
+    .c-hero-tag {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      padding: 3px 14px;
+      font-size: 0.78rem; letter-spacing: 1px; margin-bottom: 1rem;
+    }
+    .c-hero h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .c-hero p { font-size: 0.93rem; opacity: 0.8; }
+
+    .c-main { max-width: 980px; margin: 0 auto; padding: 40px 24px 60px; }
+
+    .c-section { margin-bottom: 2.4rem; }
+    .c-section-title {
+      font-size: 0.72rem; font-weight: 700; color: #1565C0;
+      letter-spacing: 2px; text-transform: uppercase;
+      margin-bottom: 0.9rem;
+      display: flex; align-items: center; gap: 0.8rem;
+    }
+    .c-section-title::after { content: ''; flex: 1; height: 1px; background: #e0e4f0; }
+
+    .c-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .c-card {
+      background: #fff; border: 1px solid #e4e7ef; border-radius: 10px;
+      padding: 1.1rem 1.3rem; display: block;
+      transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+    }
+    .c-card:hover {
+      box-shadow: 0 6px 20px rgba(21,101,192,0.13);
+      transform: translateY(-2px); border-color: #c5cae9;
+    }
+    .c-tag {
+      display: inline-block; font-size: 0.7rem; font-weight: 600;
+      padding: 2px 8px; border-radius: 8px;
+      background: #e8eaf6; color: #3949AB;
+      margin-bottom: 0.45rem;
+    }
+    .c-card-title { font-size: 0.92rem; font-weight: 600; color: #1a1a2e; line-height: 1.45; }
+    .c-card:hover .c-card-title { color: #1565C0; }
+
+    .c-footer {
+      text-align: center; padding: 1.2rem 24px;
+      font-size: 0.82rem; color: #aaa;
+      border-top: 1px solid #e4e7ef; background: #fff;
+    }
+    .c-footer a { color: #888; margin: 0 0.4rem; }
+    .c-footer a:hover { color: #1565C0; }
+    .c-footer-copy { display: block; margin-top: 0.3rem; }
+
+    @media (max-width: 640px) {
+      .c-grid { grid-template-columns: 1fr; }
+      .c-hero h1 { font-size: 1.4rem; }
+      .c-nav-links { gap: 1rem; }
+      .gate-card { padding: 2.5rem 1.8rem; }
+    }
   </style>
 </head>
 <body>
-<div class="card">
-  <div class="lock">🔒</div>
-  <h1>Android 源码学习笔记</h1>
-  <p class="sub">私有内容，请输入访问密码</p>
-  <div id="gate">
-    <input type="password" id="pwd" placeholder="请输入密码" autofocus
+
+<!-- ── 锁定状态 ── -->
+<div id="gatePage">
+  <div class="gate-card">
+    <span class="lock-icon" id="lockIcon">🔒</span>
+    <div class="gate-title">Android 源码学习笔记</div>
+    <p class="gate-sub">私有内容 · 18 篇深度源码分析</p>
+    <input class="gate-input" type="password" id="pwd"
+           placeholder="请输入密码" autofocus
            onkeydown="if(event.key==='Enter')verify()">
-    <button onclick="verify()">进入</button>
-    <div class="err" id="err">密码错误，请重试</div>
+    <button class="gate-btn" onclick="verify()">进 入</button>
+    <div class="gate-err" id="err">密码错误，请重试</div>
+    <div class="gate-back"><a href="/">← 返回主页</a></div>
   </div>
-  <div id="content">
-    <h2>全部文章（18 篇）</h2>
-    <ul class="article-list">
-      <li><a href="/android_learn_code/activitythread-msg-dispatch-clienttransaction/">ActivityThread 消息调度机制与 ClientTransaction 跨进程通信分析</a></li>
-      <li><a href="/android_learn_code/activity-window-decorview-surface-relations/">Activity · Window · DecorView · Surface · SurfaceControl · Buffer 关联</a></li>
-      <li><a href="/android_learn_code/android-crash-log-collection/">Android 应用异常日志采集与上报体系</a></li>
-      <li><a href="/android_learn_code/android-app-adaptation-guide/">Android 应用适配完全指南：分辨率与版本兼容</a></li>
-      <li><a href="/android_learn_code/android-threadlocal-analysis/">Android 框架中 ThreadLocal 的使用分析</a></li>
-      <li><a href="/android_learn_code/android-network-memory-management/">Android 网络管理与内存管理源码分析</a></li>
-      <li><a href="/android_learn_code/android-cross-process-large-data/">Android 跨进程传递大数据的完整方案</a></li>
-      <li><a href="/android_learn_code/binder-vs-socket-zygote-input/">Binder 不是万能的：Zygote 和 Input 为什么用 Socket</a></li>
-      <li><a href="/android_learn_code/buffer-graphicbuffer-metadata/">Buffer · GraphicBuffer 与元数据的本质区别</a></li>
-      <li><a href="/android_learn_code/handlerthread-vs-threadpool/">HandlerThread 源码分析与线程池对比</a></li>
-      <li><a href="/android_learn_code/surfaceflinger-buffer-ipc/">SurfaceFlinger Buffer 机制与跨进程通信源码分析</a></li>
-      <li><a href="/android_learn_code/surface-surfacecontrol-surfaceflinger/">Surface · SurfaceControl 与 SurfaceFlinger 源码分析</a></li>
-      <li><a href="/android_learn_code/view-animation-vs-window-animation/">View 动画与 Window 动画的本质区别</a></li>
-      <li><a href="/android_learn_code/vsync-choreographer-analysis/">VSync 信号驱动 App 界面刷新与 Choreographer 源码分析</a></li>
-      <li><a href="/android_learn_code/why-android-binder/">为什么 Android 使用 Binder 进行跨进程通信</a></li>
-      <li><a href="/android_learn_code/why-zygote-fork/">为什么使用 Zygote 进程 fork 而不是 init 进程</a></li>
-      <li><a href="/android_learn_code/why-handler-mechanism/">为什么需要 Handler 机制</a></li>
-      <li><a href="/android_learn_code/launcher-systemui-startup/">桌面进程与 SystemUI 进程的启动流程分析</a></li>
-    </ul>
-  </div>
-  <div class="back"><a href="/">← 返回主页</a></div>
 </div>
+
+<!-- ── 解锁状态 ── -->
+<div id="contentPage">
+
+  <nav class="c-nav">
+    <div class="c-nav-inner">
+      <a href="/" class="c-nav-logo">pengmengxing</a>
+      <ul class="c-nav-links">
+        <li><a href="/">← 主页</a></li>
+        <li><a href="https://github.com/pengmengxing" target="_blank" rel="noopener">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="c-hero">
+    <div class="c-hero-tag">Android 16 AOSP · 私有笔记</div>
+    <h1>Android 源码学习笔记</h1>
+    <p>18 篇深度源码分析 · 图形渲染 · IPC · Framework 核心机制</p>
+  </div>
+
+  <div class="c-main">
+
+    <div class="c-section">
+      <div class="c-section-title">图形渲染</div>
+      <div class="c-grid">
+        <a class="c-card" href="/android_learn_code/surface-surfacecontrol-surfaceflinger/">
+          <span class="c-tag">Surface</span>
+          <div class="c-card-title">Surface · SurfaceControl 与 SurfaceFlinger 源码分析</div>
+        </a>
+        <a class="c-card" href="/android_learn_code/surfaceflinger-buffer-ipc/">
+          <span class="c-tag">SurfaceFlinger</span>
+          <div class="c-card-title">SurfaceFlinger Buffer 机制与跨进程通信源码分析</div>
+        </a>
+        <a class="c-card" href="/android_learn_code/buffer-graphicbuffer-metadata/">
+          <span class="c-tag">Buffer</span>
+          <div class="c-card-title">Buffer · GraphicBuffer 与元数据的本质区别</div>
+        </a>
+        <a class="c-card" href="/android_learn_code/vsync-choreographer-analysis/">
+          <span class="c-tag">VSync</span>
+          <div class="c-card-title">VSync 信号驱动 App 界面刷新与 Choreographer 源码分析</div>
+        </a>
+        <a class="c-card" href="/android_learn_code/view-animation-vs-window-animation/">
+          <span class="c-tag">动画</span>
+          <div class="c-card-title">View 动画与 Window 动画的本质区别</div>
+        </a>
+      </div>
+    </div>
+
+    <div class="c-section">
+      <div class="c-section-title">Activity 与窗口</div>
+      <div class="c-grid">
+        <a class="c-card" href="/android_learn_code/activitythread-msg-dispatch-clienttransaction/">
+          <span class="c-tag">ActivityThread</span>
+          <div class="c-card-title">ActivityThread 消息调度机制与 ClientTransaction 跨进程通信分析</div>
+        </a>
+        <a class="c-card" href="/android_learn_code/activity-window-decorview-surface-relations/">
+          <span class="c-tag">窗口体系</span>
+          <div class="c-card-title">Activity · Window · DecorView · Surface · SurfaceControl · Buffer 关联</div>
+        </a>
+        <a class="c-card" href="/android_learn_code/launcher-systemui-startup/">
+          <span class="c-tag">启动流程</span>
+          <div class="c-card-title">桌面进程与 SystemUI 进程的启动流程分析</div>
+        </a>
+      </div>
+    </div>
+
+    <div class="c-section">
+      <div class="c-section-title">跨进程通信</div>
+      <div class="c-grid">
+        <a class="c-card" href="/android_learn_code/why-android-binder/">
+          <span class="c-tag">Binder</span>
+          <div class="c-card-title">为什么 Android 使用 Binder 进行跨进程通信</div>
+        </a>
+        <a class="c-card" href="/android_learn_code/binder-vs-socket-zygote-input/">
+          <span class="c-tag">Binder / Socket</span>
+          <div class="c-card-title">Binder 不是万能的：Zygote 和 Input 为什么用 Socket</div>
+        </a>
+        <a class="c-card" href="/android_learn_code/android-cross-process-large-data/">
+          <span class="c-tag">IPC</span>
+          <div class="c-card-title">Android 跨进程传递大数据的完整方案</div>
+        </a>
+      </div>
+    </div>
+
+    <div class="c-section">
+      <div class="c-section-title">Framework 核心机制</div>
+      <div class="c-grid">
+        <a class="c-card" href="/android_learn_code/why-handler-mechanism/">
+          <span class="c-tag">Handler</span>
+          <div class="c-card-title">为什么需要 Handler 机制</div>
+        </a>
+        <a class="c-card" href="/android_learn_code/handlerthread-vs-threadpool/">
+          <span class="c-tag">HandlerThread</span>
+          <div class="c-card-title">HandlerThread 源码分析与线程池对比</div>
+        </a>
+        <a class="c-card" href="/android_learn_code/android-threadlocal-analysis/">
+          <span class="c-tag">ThreadLocal</span>
+          <div class="c-card-title">Android 框架中 ThreadLocal 的使用分析</div>
+        </a>
+        <a class="c-card" href="/android_learn_code/why-zygote-fork/">
+          <span class="c-tag">Zygote</span>
+          <div class="c-card-title">为什么使用 Zygote 进程 fork 而不是 init 进程</div>
+        </a>
+      </div>
+    </div>
+
+    <div class="c-section">
+      <div class="c-section-title">工程实践</div>
+      <div class="c-grid">
+        <a class="c-card" href="/android_learn_code/android-crash-log-collection/">
+          <span class="c-tag">崩溃监控</span>
+          <div class="c-card-title">Android 应用异常日志采集与上报体系</div>
+        </a>
+        <a class="c-card" href="/android_learn_code/android-app-adaptation-guide/">
+          <span class="c-tag">适配</span>
+          <div class="c-card-title">Android 应用适配完全指南：分辨率与版本兼容</div>
+        </a>
+        <a class="c-card" href="/android_learn_code/android-network-memory-management/">
+          <span class="c-tag">网络 / 内存</span>
+          <div class="c-card-title">Android 网络管理与内存管理源码分析</div>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="c-footer">
+    <a href="/">← 返回主页</a>
+    <span>·</span>
+    <a href="https://github.com/pengmengxing" target="_blank" rel="noopener">GitHub</a>
+    <span class="c-footer-copy">&copy; 2014–2026 pengmengxing · Powered by Jekyll</span>
+  </footer>
+
+</div>
+
 <script>
-  // 已登录则直接展示
   if (sessionStorage.getItem('pmx_al_auth') === 'ok') showContent();
 
   function verify() {
@@ -88,10 +298,10 @@
       document.getElementById('pwd').focus();
     }
   }
+
   function showContent() {
-    document.getElementById('gate').style.display = 'none';
-    document.querySelector('.lock').textContent = '🔓';
-    document.getElementById('content').style.display = 'block';
+    document.getElementById('gatePage').style.display = 'none';
+    document.getElementById('contentPage').style.display = 'block';
   }
 </script>
 </body>

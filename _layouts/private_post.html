@@ -6,31 +6,172 @@ if (sessionStorage.getItem('pmx_al_auth') !== 'ok') {
   location.replace('/android_learn_code/');
 }
 </script>
-<div class="container docs-container">
-  <div class="row">
-    <div class="col-md-3">
-      <div class="sidebar hidden-print" role="complementary">
-        {% include lefttree.html %}
-      </div>
-    </div>
-    <div class="col-md-9" role="main">
-      <div class="panel docs-content">
-        <div class="wrapper">
-          <header class="post-header">
-            <h1 class="post-title">{{ page.title }}</h1>
-            <div class="meta">
-              <a href="/android_learn_code/" style="color:#888;font-size:0.9em;">← 返回目录</a>
-            </div>
-            <br />
-          </header>
-          <article class="post-content">
-            {{ content }}
-          </article>
-        </div>
-      </div>
-    </div>
+<style>
+  /* ── 隐藏旧主题元素 ── */
+  .navbar.navbar-inverse { display: none !important; }
+  .docs-header            { display: none !important; }
+  .banner                 { display: none !important; }
+  footer.footer           { display: none !important; }
+  body.index              { padding-top: 0 !important; background: #f5f6f8; }
+
+  /* ── 顶部导航条 ── */
+  .pmx-bar {
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid #e8eaf0;
+    position: sticky; top: 0; z-index: 200;
+  }
+  .pmx-bar-inner {
+    max-width: 900px; margin: 0 auto; padding: 0 24px;
+    height: 52px; display: flex; align-items: center; gap: 1rem;
+  }
+  .pmx-bar-back {
+    font-size: 0.85rem; color: #1565C0; font-weight: 500;
+    white-space: nowrap; display: flex; align-items: center;
+    transition: opacity 0.2s;
+  }
+  .pmx-bar-back:hover { opacity: 0.7; }
+  .pmx-bar-divider { width: 1px; height: 18px; background: #dde; flex-shrink: 0; }
+  .pmx-bar-title {
+    font-size: 0.84rem; color: #888;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  /* ── 文章主体 ── */
+  .pmx-wrap { max-width: 900px; margin: 0 auto; padding: 44px 24px 80px; }
+
+  .pmx-h1 {
+    font-size: 1.65rem; font-weight: 700; color: #1a237e;
+    line-height: 1.35; margin-bottom: 2rem;
+    padding-bottom: 1.1rem; border-bottom: 2px solid #e8eaf0;
+  }
+
+  /* 正文 */
+  .pmx-body { font-size: 0.96rem; line-height: 1.82; color: #2d2d2d; }
+
+  .pmx-body h2 {
+    font-size: 1.18rem; font-weight: 700; color: #1a237e;
+    margin: 2.4rem 0 1rem;
+    padding-left: 0.85rem; border-left: 4px solid #1565C0;
+  }
+  .pmx-body h3 {
+    font-size: 1.04rem; font-weight: 600; color: #283593;
+    margin: 1.9rem 0 0.8rem;
+    padding-left: 0.7rem; border-left: 3px solid #7986CB;
+  }
+  .pmx-body h4 {
+    font-size: 0.96rem; font-weight: 600; color: #444;
+    margin: 1.5rem 0 0.6rem;
+  }
+
+  .pmx-body p { margin-bottom: 1rem; }
+
+  .pmx-body a { color: #1565C0; text-decoration: underline; text-underline-offset: 2px; }
+  .pmx-body a:hover { opacity: 0.8; }
+
+  /* 强调 */
+  .pmx-body strong { color: #1a237e; font-weight: 600; }
+
+  /* 行内代码 */
+  .pmx-body code {
+    font-family: 'Consolas', 'Fira Code', monospace;
+    font-size: 0.87em;
+    background: #f0f2ff; color: #1565C0;
+    padding: 1px 5px; border-radius: 4px;
+  }
+
+  /* 代码块 */
+  .pmx-body pre {
+    background: #1e1e2e; border-radius: 10px;
+    padding: 1.2rem 1.4rem; overflow-x: auto;
+    margin: 1.3rem 0; border: 1px solid #2d2d40;
+  }
+  .pmx-body pre code {
+    background: none; color: #cdd6f4;
+    font-size: 0.875rem; padding: 0; border-radius: 0;
+  }
+
+  /* 表格 */
+  .pmx-body table {
+    width: 100%; border-collapse: collapse;
+    margin: 1.3rem 0; font-size: 0.9rem;
+    display: block; overflow-x: auto;
+  }
+  .pmx-body th {
+    background: #e8eaf6; color: #283593; font-weight: 600;
+    padding: 0.6rem 1rem; text-align: left;
+    border: 1px solid #c5cae9; white-space: nowrap;
+  }
+  .pmx-body td {
+    padding: 0.55rem 1rem; border: 1px solid #e0e0e0;
+    color: #333; vertical-align: top;
+  }
+  .pmx-body tr:nth-child(even) td { background: #fafbff; }
+
+  /* 引用 */
+  .pmx-body blockquote {
+    border-left: 4px solid #7986CB;
+    margin: 1.3rem 0; padding: 0.9rem 1.2rem;
+    background: #f8f9ff; color: #555;
+    border-radius: 0 8px 8px 0;
+  }
+  .pmx-body blockquote p { margin: 0; }
+
+  /* 分割线 */
+  .pmx-body hr { border: none; border-top: 1px solid #e8eaf0; margin: 2rem 0; }
+
+  /* 列表 */
+  .pmx-body ul, .pmx-body ol { padding-left: 1.6rem; margin-bottom: 1rem; }
+  .pmx-body li { margin-bottom: 0.3rem; line-height: 1.75; }
+  .pmx-body li > ul, .pmx-body li > ol { margin-top: 0.2rem; margin-bottom: 0; }
+
+  /* Mermaid */
+  .pmx-body .mermaid {
+    background: #fff; border: 1px solid #e4e7ef;
+    border-radius: 10px; padding: 1.2rem;
+    margin: 1.3rem 0; overflow-x: auto; text-align: center;
+  }
+
+  /* ── 底部导航 ── */
+  .pmx-foot {
+    max-width: 900px; margin: 0 auto;
+    padding: 1.2rem 24px 2.5rem;
+    border-top: 1px solid #e8eaf0;
+  }
+  .pmx-foot a { font-size: 0.88rem; color: #1565C0; font-weight: 500; }
+  .pmx-foot a:hover { opacity: 0.75; }
+
+  @media (max-width: 640px) {
+    .pmx-wrap { padding: 28px 16px 60px; }
+    .pmx-h1   { font-size: 1.3rem; }
+    .pmx-body h2 { font-size: 1.05rem; }
+    .pmx-bar-inner { padding: 0 16px; }
+    .pmx-bar-title { display: none; }
+  }
+</style>
+
+<!-- 顶部导航条 -->
+<div class="pmx-bar">
+  <div class="pmx-bar-inner">
+    <a class="pmx-bar-back" href="/android_learn_code/">← 源码笔记</a>
+    <div class="pmx-bar-divider"></div>
+    <span class="pmx-bar-title">{{ page.title }}</span>
   </div>
 </div>
+
+<!-- 文章内容 -->
+<div class="pmx-wrap">
+  <h1 class="pmx-h1">{{ page.title }}</h1>
+  <article class="pmx-body">
+    {{ content }}
+  </article>
+</div>
+
+<!-- 底部 -->
+<div class="pmx-foot">
+  <a href="/android_learn_code/">← 返回目录</a>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
