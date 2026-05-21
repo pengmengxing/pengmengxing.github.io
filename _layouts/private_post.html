@@ -1,0 +1,46 @@
+---
+layout: default
+---
+<script>
+if (sessionStorage.getItem('pmx_al_auth') !== 'ok') {
+  location.replace('/android_learn_code/');
+}
+</script>
+<div class="container docs-container">
+  <div class="row">
+    <div class="col-md-3">
+      <div class="sidebar hidden-print" role="complementary">
+        {% include lefttree.html %}
+      </div>
+    </div>
+    <div class="col-md-9" role="main">
+      <div class="panel docs-content">
+        <div class="wrapper">
+          <header class="post-header">
+            <h1 class="post-title">{{ page.title }}</h1>
+            <div class="meta">
+              <a href="/android_learn_code/" style="color:#888;font-size:0.9em;">← 返回目录</a>
+            </div>
+            <br />
+          </header>
+          <article class="post-content">
+            {{ content }}
+          </article>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('code.language-mermaid').forEach(function (code) {
+      var wrapper = code.closest('.language-mermaid') || code.parentElement;
+      var div = document.createElement('div');
+      div.className = 'mermaid';
+      div.textContent = code.textContent;
+      wrapper.parentNode.replaceChild(div, wrapper);
+    });
+    mermaid.initialize({ startOnLoad: true, theme: 'default' });
+  });
+</script>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Android 源码学习 · 验证入口</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI','Microsoft YaHei',sans-serif;background:#f5f6f8;
+         display:flex;align-items:center;justify-content:center;min-height:100vh}
+    .card{background:#fff;border-radius:14px;padding:2.5rem 2rem;
+          box-shadow:0 8px 32px rgba(21,101,192,0.12);width:360px;text-align:center}
+    .lock{font-size:2.5rem;margin-bottom:1rem}
+    h1{font-size:1.2rem;color:#1a237e;margin-bottom:0.4rem}
+    .sub{font-size:0.85rem;color:#888;margin-bottom:1.8rem}
+    input[type=password]{width:100%;padding:10px 14px;border:1.5px solid #ddd;
+      border-radius:8px;font-size:1rem;text-align:center;letter-spacing:4px;
+      outline:none;transition:border-color 0.2s}
+    input[type=password]:focus{border-color:#1565C0}
+    button{margin-top:1rem;width:100%;padding:11px;background:#1565C0;color:#fff;
+      border:none;border-radius:8px;font-size:1rem;cursor:pointer;
+      transition:background 0.2s}
+    button:hover{background:#0D47A1}
+    .err{margin-top:0.8rem;font-size:0.85rem;color:#e53935;display:none}
+    .back{margin-top:1.4rem;font-size:0.82rem}
+    .back a{color:#888;text-decoration:none}
+    .back a:hover{color:#1565C0}
+    /* 文章列表（验证通过后显示） */
+    #content{display:none;text-align:left;margin-top:1.5rem}
+    #content h2{font-size:0.75rem;font-weight:700;color:#1565C0;
+      letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1rem}
+    .article-list{list-style:none}
+    .article-list li{border-bottom:1px solid #f0f0f0}
+    .article-list a{display:block;padding:0.65rem 0;font-size:0.92rem;
+      color:#222;text-decoration:none;transition:color 0.2s}
+    .article-list a:hover{color:#1565C0}
+    .article-list .tag{font-size:0.72rem;color:#888;margin-left:0.4rem}
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="lock">🔒</div>
+  <h1>Android 源码学习笔记</h1>
+  <p class="sub">私有内容，请输入访问密码</p>
+  <div id="gate">
+    <input type="password" id="pwd" placeholder="请输入密码" autofocus
+           onkeydown="if(event.key==='Enter')verify()">
+    <button onclick="verify()">进入</button>
+    <div class="err" id="err">密码错误，请重试</div>
+  </div>
+  <div id="content">
+    <h2>全部文章（18 篇）</h2>
+    <ul class="article-list">
+      <li><a href="/android_learn_code/activitythread-msg-dispatch-clienttransaction/">ActivityThread 消息调度机制与 ClientTransaction 跨进程通信分析</a></li>
+      <li><a href="/android_learn_code/activity-window-decorview-surface-relations/">Activity · Window · DecorView · Surface · SurfaceControl · Buffer 关联</a></li>
+      <li><a href="/android_learn_code/android-crash-log-collection/">Android 应用异常日志采集与上报体系</a></li>
+      <li><a href="/android_learn_code/android-app-adaptation-guide/">Android 应用适配完全指南：分辨率与版本兼容</a></li>
+      <li><a href="/android_learn_code/android-threadlocal-analysis/">Android 框架中 ThreadLocal 的使用分析</a></li>
+      <li><a href="/android_learn_code/android-network-memory-management/">Android 网络管理与内存管理源码分析</a></li>
+      <li><a href="/android_learn_code/android-cross-process-large-data/">Android 跨进程传递大数据的完整方案</a></li>
+      <li><a href="/android_learn_code/binder-vs-socket-zygote-input/">Binder 不是万能的：Zygote 和 Input 为什么用 Socket</a></li>
+      <li><a href="/android_learn_code/buffer-graphicbuffer-metadata/">Buffer · GraphicBuffer 与元数据的本质区别</a></li>
+      <li><a href="/android_learn_code/handlerthread-vs-threadpool/">HandlerThread 源码分析与线程池对比</a></li>
+      <li><a href="/android_learn_code/surfaceflinger-buffer-ipc/">SurfaceFlinger Buffer 机制与跨进程通信源码分析</a></li>
+      <li><a href="/android_learn_code/surface-surfacecontrol-surfaceflinger/">Surface · SurfaceControl 与 SurfaceFlinger 源码分析</a></li>
+      <li><a href="/android_learn_code/view-animation-vs-window-animation/">View 动画与 Window 动画的本质区别</a></li>
+      <li><a href="/android_learn_code/vsync-choreographer-analysis/">VSync 信号驱动 App 界面刷新与 Choreographer 源码分析</a></li>
+      <li><a href="/android_learn_code/why-android-binder/">为什么 Android 使用 Binder 进行跨进程通信</a></li>
+      <li><a href="/android_learn_code/why-zygote-fork/">为什么使用 Zygote 进程 fork 而不是 init 进程</a></li>
+      <li><a href="/android_learn_code/why-handler-mechanism/">为什么需要 Handler 机制</a></li>
+      <li><a href="/android_learn_code/launcher-systemui-startup/">桌面进程与 SystemUI 进程的启动流程分析</a></li>
+    </ul>
+  </div>
+  <div class="back"><a href="/">← 返回主页</a></div>
+</div>
+<script>
+  // 已登录则直接展示
+  if (sessionStorage.getItem('pmx_al_auth') === 'ok') showContent();
+
+  function verify() {
+    var v = document.getElementById('pwd').value;
+    if (v === '961279') {
+      sessionStorage.setItem('pmx_al_auth', 'ok');
+      showContent();
+    } else {
+      document.getElementById('err').style.display = 'block';
+      document.getElementById('pwd').value = '';
+      document.getElementById('pwd').focus();
+    }
+  }
+  function showContent() {
+    document.getElementById('gate').style.display = 'none';
+    document.querySelector('.lock').textContent = '🔓';
+    document.getElementById('content').style.display = 'block';
+  }
+</script>
+</body>
+</html>

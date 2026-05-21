@@ -18,6 +18,11 @@ future: true
 
 exclude: ['README.md', 'Gemfile.lock', 'Gemfile', 'Rakefile']
 
+collections:
+  android_learn:
+    output: true
+    permalink: /android_learn_code/:name/
+
 github_username: pengmengxing
 
 # Build settings
