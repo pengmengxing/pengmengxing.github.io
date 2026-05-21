@@ -13,6 +13,7 @@ banner: 学而不思则罔，思而不学则殆。
 
 #permalink: /:categories/:year/:month/:day/:title/
 permalink: /:year/:month/:day/:title/
+timezone: Asia/Shanghai
 future: true
 
 exclude: ['README.md', 'Gemfile.lock', 'Gemfile', 'Rakefile']
