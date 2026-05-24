@@ -1,3 +1,5 @@
+---
+---
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -343,68 +345,18 @@
     <section id="posts">
         <div class="section-label">最新文章</div>
 
-        <a href="/2026/05/24/ubuntu-computer-setup/" class="post-card">
+        {% for post in site.posts %}
+        <a href="{{ post.url }}" class="post-card">
             <div class="post-meta">
-                <span class="post-date">2026-05-24</span>
-                <span class="post-tag">Ubuntu</span>
+                <span class="post-date">{{ post.date | date: "%Y-%m-%d" }}</span>
+                {% if post.tag %}<span class="post-tag">{{ post.tag }}</span>{% endif %}
             </div>
-            <div class="post-title">Ubuntu 电脑配置</div>
-            <div class="post-desc">截图工具 flameshot、MPV 播放器、搜狗输入法、IntelliJ IDEA 破解版、Typora 破解版、Android Studio 快捷键等常用软件的安装与配置指南。</div>
+            <div class="post-title">{{ post.title }}</div>
+            {% if post.description %}
+            <div class="post-desc">{{ post.description }}</div>
+            {% endif %}
         </a>
-
-        <a href="/2026/05/17/blur-examples-verification/" class="post-card">
-            <div class="post-meta">
-                <span class="post-date">2026-05-17</span>
-                <span class="post-tag">Blur</span>
-            </div>
-            <div class="post-title">View 模糊 &amp; Window 模糊实例验证</div>
-            <div class="post-desc">用两个真实代码场景，将 View 模糊与 Window 模糊的分析结论落地到具体源码行，覆盖 RenderEffect 调用链与 BackgroundBlur 全流程。</div>
-        </a>
-
-        <a href="/2026/05/17/window-blur-analysis/" class="post-card">
-            <div class="post-meta">
-                <span class="post-date">2026-05-17</span>
-                <span class="post-tag">Blur</span>
-            </div>
-            <div class="post-title">Android 16 Window 模糊完整流程深度分析</div>
-            <div class="post-desc">RenderEffect 与 BackgroundBlur 两种窗口模糊机制的 WMS 调度、SurfaceControl 事务提交与 SurfaceFlinger Layer 合成路径。</div>
-        </a>
-
-        <a href="/2026/05/17/view-blur-analysis/" class="post-card">
-            <div class="post-meta">
-                <span class="post-date">2026-05-17</span>
-                <span class="post-tag">Blur</span>
-            </div>
-            <div class="post-title">Android 16 View 模糊完整流程深度分析</div>
-            <div class="post-desc">View.setRenderEffect(BlurRenderEffect) 从 Java 层属性设置，到 RenderThread 录制，再到 SkiaRenderEngine GPU 模糊渲染的完整链路。</div>
-        </a>
-
-        <a href="/2026/05/13/android-app-launch-view-drawing-framework/" class="post-card">
-            <div class="post-meta">
-                <span class="post-date">2026-05-13</span>
-                <span class="post-tag">图形框架</span>
-            </div>
-            <div class="post-title">Android 应用启动与 View 绘制 — 三进程图形框架总览</div>
-            <div class="post-desc">App · SurfaceFlinger · SystemServer 三进程协作的全景架构，梳理 View 绘制请求到屏幕显示的完整跨进程路径。</div>
-        </a>
-
-        <a href="/2026/05/12/view-drawing-hwui-renderthread-surfaceflinger/" class="post-card">
-            <div class="post-meta">
-                <span class="post-date">2026-05-12</span>
-                <span class="post-tag">HWUI</span>
-            </div>
-            <div class="post-title">View 绘制深度分析：HWUI · RenderThread · SurfaceFlinger</div>
-            <div class="post-desc">从 invalidate() 到 GPU 光栅化，深入 HWUI RenderNode 录制、RenderThread 调度与 SurfaceFlinger 合成的函数级完整路径。</div>
-        </a>
-
-        <a href="/2022/11/12/Activity-launch-process/" class="post-card">
-            <div class="post-meta">
-                <span class="post-date">2022-11-12</span>
-                <span class="post-tag">Android</span>
-            </div>
-            <div class="post-title">Activity 启动流程</div>
-            <div class="post-desc">深入追踪 startActivity() 到 onResume() 的完整源码路径，覆盖 AMS 调度、进程创建与 Window 附着全流程。</div>
-        </a>
+        {% endfor %}
 
         <a href="/android_learn_code/" class="post-card post-card-private">
             <div class="post-meta">

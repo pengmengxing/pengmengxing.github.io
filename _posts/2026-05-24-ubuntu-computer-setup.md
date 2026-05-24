@@ -4,6 +4,7 @@ title:  "Ubuntu 电脑配置"
 date:   2026-05-24 00:00:00 +0800
 categories: linux
 tag: Ubuntu
+description: 截图工具 flameshot、MPV 播放器、搜狗输入法、IntelliJ IDEA 破解版、Typora 破解版、Android Studio 快捷键等常用软件的安装与配置指南。
 ---
 
 # 1.安装截图工具 flameshot

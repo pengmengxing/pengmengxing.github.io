@@ -4,6 +4,7 @@ title:  Activity启动流程
 date:   2022-11-12 00:00:00 +0800
 categories: document
 tag: 教程
+description: 深入追踪 startActivity() 到 onResume() 的完整源码路径，覆盖 AMS 调度、进程创建与 Window 附着全流程。
 ---
 
 * content

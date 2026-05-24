@@ -4,6 +4,7 @@ title:  "View 绘制深度分析：HWUI · RenderThread · SurfaceFlinger"
 date:   2026-05-12 00:00:00 +0800
 categories: android
 tag: HWUI
+description: 从 invalidate() 到 GPU 光栅化，深入 HWUI RenderNode 录制、RenderThread 调度与 SurfaceFlinger 合成的函数级完整路径。
 ---
 
 > 基于 Android 16 AOSP 源码实测  

@@ -4,6 +4,7 @@ title:  "Android 16 Window 模糊完整流程深度分析"
 date:   2026-05-17 00:00:00 +0800
 categories: android
 tag: Blur
+description: RenderEffect 与 BackgroundBlur 两种窗口模糊机制的 WMS 调度、SurfaceControl 事务提交与 SurfaceFlinger Layer 合成路径。
 ---
 
 > 基于 Android 16 AOSP 源码（`J:\aosp16`）  

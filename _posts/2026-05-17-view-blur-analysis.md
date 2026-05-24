@@ -4,6 +4,7 @@ title:  "Android 16 View 模糊完整流程深度分析"
 date:   2026-05-17 00:00:00 +0800
 categories: android
 tag: Blur
+description: View.setRenderEffect(BlurRenderEffect) 从 Java 层属性设置，到 RenderThread 录制，再到 SkiaRenderEngine GPU 模糊渲染的完整链路。
 ---
 
 > 基于 Android 16 AOSP 源码（`J:\aosp16`）  

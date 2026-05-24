@@ -4,6 +4,7 @@ title:  "View 模糊 & Window 模糊实例验证"
 date:   2026-05-17 00:00:00 +0800
 categories: android
 tag: Blur
+description: 用两个真实代码场景，将 View 模糊与 Window 模糊的分析结论落地到具体源码行，覆盖 RenderEffect 调用链与 BackgroundBlur 全流程。
 ---
 
 > 基于 Android 16 AOSP 源码（`J:\aosp16`）  
