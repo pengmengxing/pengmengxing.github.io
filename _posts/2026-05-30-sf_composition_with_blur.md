@@ -7,8 +7,6 @@ tag: SurfaceFlinger
 description: backgroundBlurRadius 触发窗口级模糊，模糊层及其下方层强制 GPU(CLIENT)合成，上方层保持 DEVICE 的混合合成路径分析。
 ---
 
-# SurfaceFlinger 合成流程详解：含 BackgroundBlur 的混合合成
-
 **场景**：屏幕上有 5 个 Layer，从低到高依次为：
 
 | Z 序 | Layer | 特性 |

@@ -7,8 +7,6 @@ tag: SurfaceFlinger
 description: 圆角 setCornerRadius() 只影响小窗自身，不通过 forceClientComposition 传播，壁纸与桌面仍保持 DEVICE 硬件合成的混合合成案例分析。
 ---
 
-# SurfaceFlinger 合成流程详解：含圆角小窗的混合合成
-
 **场景**：屏幕上有 5 个 Layer，从低到高依次为：
 
 | Z 序 | Layer | 合成方式 |

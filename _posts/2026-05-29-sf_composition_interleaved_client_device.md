@@ -7,8 +7,6 @@ tag: SurfaceFlinger
 description: 当 DEVICE 层被两个 CLIENT 层在 z 序上夹住时，HWC 只有一个 clientTarget，分析 SurfaceFlinger 如何强制中间层降级为 CLIENT 合成。
 ---
 
-# SurfaceFlinger 合成流程详解：CLIENT/DEVICE 交叉层的 z 序矛盾处理
-
 **场景**：屏幕上有 5 个 Layer，从低到高依次为：
 
 | Z 序 | Layer | 初始请求 | 最终合成方式 |
