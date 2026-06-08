@@ -24,14 +24,28 @@ description: 在 SystemServer / HWUI / SurfaceFlinger 三方读同一个 System 
 | 进程 | 进程模型 | 读取机制 | 即时生效 |
 |------|---------|---------|---------|
 | SurfaceFlinger | 独立 native 进程 | `base::CachedBoolProperty` 单例 | ✅ 实时 |
-| HWUI | `libhwui.so`，链接进每个硬件加速 App 进程 | `base::CachedBoolProperty` 单例 | ✅ 实时 |
+| HWUI | `libhwui.so`，链接进每个硬件加速 App 进程 | `base::CachedBoolProperty` 单例 + 原子缓存/限流 | ✅ ≤250ms |
 | SystemServer | 独立 java 进程 | `SystemProperties` + `addChangeCallback` | ✅ 回调刷新 |
 
 > ⚠️ **避坑**：HWUI 现成的 `Properties::load()` 体系（static 成员）只在 RenderThread 特定时机刷新，界面静止不重绘时开关不更新——**不保证即时**。故 HWUI 这里采用独立 `CachedBoolProperty` 单例（方案 B），与 SF 一致。
 
-### `CachedBoolProperty` 为何高效
+### `CachedBoolProperty` 为何高效，以及它的多线程坑
 
-`system/libbase/include/android-base/properties.h` 提供。它在每次 `Get()` 时只比对 property-area 的 serial，**值没变走缓存（近零开销）**，值一变才重新解析；内部自带 mutex，多线程调用安全。
+`system/libbase/include/android-base/properties.h` 提供。它在每次 `Get()` 时只比对 property-area 的 serial，**值没变走缓存（近零开销）**，值一变才重新解析。
+
+⚠️ **但它内部自带一把 `std::mutex`，每次 `Get()` 都要加锁**（见 `CachedParsedProperty::Get`）。底层 serial 比对是无锁的，真正被串行化的是这把 mutex。HWUI 高频调用场景下——例如 SurfaceFlinger 的 RenderEngine 线程，5 个线程 1s 内调用上千次——所有线程都排队抢这把锁，于是出现**锁等待（lock-wait）**。
+
+> 注：`CachedProperty::Get` 自身被注释标为「完全线程不安全」，所以 `CachedParsedProperty` 才用一把进程级 mutex 把它串行化——这把锁是必需的，但放在每次调用的热路径上就成了瓶颈。
+
+### HWUI 的解法：原子缓存 + 限流刷新
+
+把**热路径改成无锁原子读**，把「读 property」这件相对重的事**限流**到至多每隔 250ms 由**一个**线程做一次：
+
+- 热路径（绝大多数调用）= 一次 `std::atomic<bool>` 的 relaxed load，**无锁、无竞争**。
+- 用 `compare_exchange_strong` 当闸门：每个间隔内只有抢到 CAS 的那个线程才会调 `sProp.Get()`，其余线程直接返回缓存值。因此那把 mutex 永远**无竞争**，且对 `CachedProperty` 的访问天然单线程。
+- 代价：开关生效有最多 250ms 延迟（对调试日志开关无感）。`setprop` 后无需重启即生效不变。
+
+> 备选「零延迟 + 热路径零开销」方案：起后台 watcher 线程阻塞在 `__system_property_wait` 上，属性一变即更新原子。但 libhwui 链进每个 App 进程，给每进程常驻一个线程只为一个 debug 开关太重，故未采用。
 
 ---
 
@@ -74,6 +88,9 @@ description: 在 SystemServer / HWUI / SurfaceFlinger 三方读同一个 System 
 
 #include <android-base/properties.h>
 #include <log/log.h>
+#include <utils/Timers.h>
+
+#include <atomic>
 
 namespace android {
 namespace uirenderer {
@@ -82,14 +99,29 @@ namespace uirenderer {
 // system_server so a single `setprop debug.gfx.log 1` toggles all of them.
 #define PROPERTY_GFX_LOG "debug.gfx.log"
 
-// base::CachedBoolProperty compares the property-area serial on every call and
-// only re-parses when the value actually changed, so setprop takes effect on
-// the very next call without any restart. Returns false until the property is set.
+// Hot path is a single relaxed atomic load: lock-free and contention-free even
+// when called thousands of times per second from many threads. The property is
+// re-read at most once per 250 ms, and a compare-exchange ensures only ONE
+// thread does that refresh per interval -- so CachedBoolProperty's internal
+// mutex is always uncontended. setprop still takes effect without restart, with
+// latency bounded by the refresh interval. Returns false until the property is set.
 inline bool gfxLogEnabled() {
-    // Function-local static: one instance per process, thread-safe init.
-    // CachedBoolProperty::Get is internally synchronized (holds its own mutex).
+    static constexpr nsecs_t kRefreshIntervalNs = ms2ns(250);
+
+    static std::atomic<bool> sCached{false};
+    static std::atomic<nsecs_t> sNextRefreshNs{0};
+    // Only touched by the single refresher selected by the CAS below, so its
+    // (thread-unsafe) serial comparison runs single-threaded by construction.
     static base::CachedBoolProperty sProp(PROPERTY_GFX_LOG);
-    return sProp.Get(/*default_value=*/false);
+
+    const nsecs_t now = systemTime(SYSTEM_TIME_MONOTONIC);
+    nsecs_t next = sNextRefreshNs.load(std::memory_order_relaxed);
+    if (now >= next &&
+        sNextRefreshNs.compare_exchange_strong(next, now + kRefreshIntervalNs,
+                                               std::memory_order_relaxed)) {
+        sCached.store(sProp.Get(/*default_value=*/false), std::memory_order_relaxed);
+    }
+    return sCached.load(std::memory_order_relaxed);
 }
 
 }  // namespace uirenderer
@@ -246,7 +278,8 @@ adb shell setprop debug.gfx.log 0   # 三处日志同时停止
 1. **key 一字不差**：三处都是 `debug.gfx.log`，否则无法一条命令全控。
 2. **代码改动需先编译刷入**：「不用重启」指镜像已刷、进程已跑之后纯切换开关值；改代码那次仍需重新编译并让进程加载新代码。
 3. **user 版本 SELinux**：`debug.` 在 user 版本可能 `setprop` 被拒（`getprop` 回读不到值即是被拦），需单独配 `property_contexts` + sepolicy。
-4. **SF 热路径**：`CachedBoolProperty` 单次调用很轻，但勿在合成主循环逐 Layer 反复调 `gfxLogEnabled()`——在帧开头读一次存局部 `bool` 复用。
+4. **热路径**：HWUI 的 `gfxLogEnabled()` 已改为「原子缓存 + 限流刷新」，多线程高频调用无锁无竞争，可放心直接调。SF 的 `GfxLogSwitch.h` 仍是 `CachedBoolProperty` 直读版（每次 `Get()` 加锁），单次调用很轻但勿在合成主循环逐 Layer 反复调——在帧开头读一次存局部 `bool` 复用；若 SF 侧也出现高频多线程调用，按 HWUI 同样的原子+限流方式改造即可。
+   - HWUI 限流间隔为 250ms（`kRefreshIntervalNs`），即 `setprop` 后最迟 250ms 生效；需要更快可调小该常量。
 5. **format 警告**：SF 那条 `%#x` 配 `mFlags`，若编译告警按整型宽度调整（如 `PRIx32`）。
 6. **HWUI 进程模型**：HWUI 不是独立进程，是 `libhwui.so`，链接进每个硬件加速 App 进程；各进程各持一份缓存，但都读同一 property，行为一致。
 ```
