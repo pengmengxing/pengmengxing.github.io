@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: private_post
 title:  "Ubuntu 电脑配置"
 date:   2026-05-24 00:00:00 +0800
 categories: linux

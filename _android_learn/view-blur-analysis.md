@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: private_post
 title:  "Android 16 View 模糊完整流程深度分析"
 date:   2026-05-17 00:00:00 +0800
 categories: android

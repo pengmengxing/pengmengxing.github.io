@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: private_post
 title:  "Android 应用启动与 View 绘制 — 三进程图形框架总览"
 date:   2026-05-13 00:00:00 +0800
 categories: android

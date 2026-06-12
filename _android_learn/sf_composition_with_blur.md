@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: private_post
 title:  "SurfaceFlinger 合成流程详解：含 BackgroundBlur 的混合合成"
 date:   2026-05-30 00:00:00 +0800
 categories: android

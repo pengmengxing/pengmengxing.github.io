@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: private_post
 title:  "View 绘制深度分析：HWUI · RenderThread · SurfaceFlinger"
 date:   2026-05-12 00:00:00 +0800
 categories: android

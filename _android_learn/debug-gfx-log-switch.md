@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: private_post
 title:  "跨进程公共 Log 开关实现（debug.gfx.log）"
 date:   2026-06-02 00:00:00 +0800
 categories: android

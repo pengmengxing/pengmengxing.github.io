@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: private_post
 title:  Activity启动流程
 date:   2022-11-12 00:00:00 +0800
 categories: document

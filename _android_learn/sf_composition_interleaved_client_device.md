@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: private_post
 title:  "SurfaceFlinger 合成流程详解：CLIENT/DEVICE 交叉层的 z 序矛盾处理"
 date:   2026-05-29 00:00:00 +0800
 categories: android

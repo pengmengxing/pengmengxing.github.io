@@ -1,0 +1,4 @@
+  以后上传新文章只需：
+  1. 把 .md 文件放入 _posts/（文件名格式 YYYY-MM-DD-title.md）
+  2. front matter 里加 description 字段
+  3. git add + git commit + git push 即可，首页自动更新

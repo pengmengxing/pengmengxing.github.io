@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: private_post
 title:  "图形渲染笔记:纹理、GPU 采样与 SurfaceFlinger 合成"
 date:   2026-06-12 00:00:00 +0800
 categories: android

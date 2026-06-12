@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: private_post
 title:  "View 模糊 & Window 模糊实例验证"
 date:   2026-05-17 00:00:00 +0800
 categories: android
